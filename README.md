@@ -2,6 +2,18 @@
 
 A Python [FastMCP](https://gofastmcp.com) server that re-exposes Kindora's public funder and grant tools so you can add them to **ChatGPT as a custom MCP connector** (Developer mode / Apps). It is a thin proxy: every tool forwards to the live Kindora MCP endpoint and returns the result unchanged.
 
+## Easiest install: deploy, then paste the URL into ChatGPT
+
+ChatGPT can't run a local repo; it connects to a hosted HTTPS URL. This server needs **no API keys** (Kindora's free tier is open), so hosting it is one click, no Terminal, no `.env`.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/wayanvota/kindora-chatgpt-mcp)
+
+1. Click the button, sign in to Render with GitHub, and approve. Render reads `render.yaml` and builds the container. First deploy takes ~2 minutes.
+2. Copy the service URL Render gives you and add `/mcp` to the end, e.g. `https://kindora-chatgpt-mcp.onrender.com/mcp`.
+3. In ChatGPT: **Settings -> Connectors (Apps) -> Advanced -> Developer mode**, then **Create connector**, paste the URL, choose **No authentication**, and save. Enable it from the "+" menu in any chat.
+
+That's the whole install. (Render's free tier sleeps when idle, so the first request after a quiet spell takes 30-60 seconds to wake. Fly.io, below, stays warmer.)
+
 ## What the Kindora MCP does
 
 Kindora is a grant-discovery platform for nonprofits. Its MCP server is a read-only, free-tier service over public **IRS 990 / 990-PF** filings and **Grants.gov** opportunities, covering 174K+ US foundations, 32K+ European funders, and 43K+ open grants. The upstream server exposes ten tools across discovery, profile, financials, and reference categories. This wrapper mirrors the nine that matter for ChatGPT (it drops the upstream `list_tools` helper, which is redundant since MCP clients enumerate tools natively).

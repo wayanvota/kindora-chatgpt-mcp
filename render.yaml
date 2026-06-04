@@ -1,18 +1,23 @@
-# Render.com blueprint. Push this repo to GitHub, then in Render:
-#   New + -> Blueprint -> pick this repo. Your MCP URL is https://<service>.onrender.com/mcp
+# Render.com blueprint.
+# Easiest: click the "Deploy to Render" button in the README. Or manually:
+#   New + -> Blueprint -> pick this repo.
+# After it goes live, your MCP URL is https://<service>.onrender.com/mcp
+#
+# Notes:
+#   - No health check path is set on purpose: an MCP endpoint does not return a
+#     plain 2xx to a GET probe, so Render's port-open detection is used instead.
+#   - PORT is intentionally NOT pinned. Render injects its own $PORT and the
+#     server binds it automatically.
 services:
   - type: web
     name: kindora-chatgpt-mcp
     runtime: docker
     plan: free
-    healthCheckPath: /mcp
     envVars:
       - key: TRANSPORT
         value: http
       - key: HOST
         value: 0.0.0.0
-      - key: PORT
-        value: "8000"
       - key: MCP_PATH
         value: /mcp
       - key: KINDORA_MCP_URL
