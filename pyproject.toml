@@ -1,0 +1,29 @@
+[project]
+name = "kindora-chatgpt-mcp"
+version = "0.1.0"
+description = "A FastMCP server that re-exposes Kindora's funder/grant tools for ChatGPT custom connectors."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "fastmcp>=2.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+]
+
+[project.scripts]
+kindora-chatgpt-mcp = "server:main"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["server"]

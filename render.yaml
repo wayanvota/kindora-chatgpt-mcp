@@ -1,0 +1,19 @@
+# Render.com blueprint. Push this repo to GitHub, then in Render:
+#   New + -> Blueprint -> pick this repo. Your MCP URL is https://<service>.onrender.com/mcp
+services:
+  - type: web
+    name: kindora-chatgpt-mcp
+    runtime: docker
+    plan: free
+    healthCheckPath: /mcp
+    envVars:
+      - key: TRANSPORT
+        value: http
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "8000"
+      - key: MCP_PATH
+        value: /mcp
+      - key: KINDORA_MCP_URL
+        value: https://mcp.kindora.co/mcp

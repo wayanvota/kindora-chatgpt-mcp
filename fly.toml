@@ -1,0 +1,24 @@
+# Fly.io deploy config. Usage:
+#   fly launch --no-deploy --copy-config --name <your-app>
+#   fly deploy
+# Then your MCP URL is https://<your-app>.fly.dev/mcp
+
+app = "kindora-chatgpt-mcp"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  TRANSPORT = "http"
+  HOST = "0.0.0.0"
+  PORT = "8000"
+  MCP_PATH = "/mcp"
+  KINDORA_MCP_URL = "https://mcp.kindora.co/mcp"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
