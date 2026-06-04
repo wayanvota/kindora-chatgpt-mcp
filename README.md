@@ -49,7 +49,7 @@ ChatGPT Developer mode can connect to any remote MCP server, so a wrapper is opt
 ## Get the code
 
 ```bash
-git clone https://github.com/<your-username>/kindora-chatgpt-mcp.git
+git clone https://github.com/wayanvota/kindora-chatgpt-mcp.git
 cd kindora-chatgpt-mcp
 pip install -r requirements.txt
 ```
