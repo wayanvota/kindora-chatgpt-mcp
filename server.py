@@ -11,7 +11,7 @@ Why a wrapper instead of pointing ChatGPT straight at Kindora?
     sitting in front of Kindora's live API.
 
 It works as an MCP -> MCP proxy: every tool below forwards the call to the live
-Kindora MCP endpoint (default: https://mcp.kindora.co/mcp) and returns the result
+Kindora MCP endpoint (default: https://kindora-mcp.azurewebsites.net/mcp/) and returns the result
 unchanged. All tools are read-only and hit public IRS 990 / Grants.gov data.
 
 Transports
@@ -40,7 +40,7 @@ from fastmcp.client.transports import StreamableHttpTransport
 # --------------------------------------------------------------------------- #
 
 # The live upstream Kindora MCP endpoint that we proxy to.
-KINDORA_MCP_URL = os.environ.get("KINDORA_MCP_URL", "https://mcp.kindora.co/mcp")
+KINDORA_MCP_URL = os.environ.get("KINDORA_MCP_URL", "https://kindora-mcp.azurewebsites.net/mcp/")
 
 # Optional bearer token forwarded to Kindora (the public/free tier needs none;
 # set this if you have been issued a key).

@@ -34,7 +34,7 @@ All tools are annotated `readOnlyHint: true`, so ChatGPT runs them without write
 
 ## Why wrap it instead of pointing ChatGPT at Kindora directly?
 
-ChatGPT Developer mode can connect to any remote MCP server, so a wrapper is optional. It earns its place when you want one endpoint you control: curated tool descriptions, read-only annotations, a place to add auth / rate limiting / logging, header injection for a Kindora key, or to pin a specific upstream URL. If you want none of that, you can skip this and add `https://mcp.kindora.co/mcp` to ChatGPT directly.
+ChatGPT Developer mode can connect to any remote MCP server, so a wrapper is optional. It earns its place when you want one endpoint you control: curated tool descriptions, read-only annotations, a place to add auth / rate limiting / logging, header injection for a Kindora key, or to pin a specific upstream URL. If you want none of that, you can skip this and add `https://kindora-mcp.azurewebsites.net/mcp/` to ChatGPT directly.
 
 ## Repository contents
 
@@ -135,7 +135,7 @@ All via environment variables (see `.env.example`):
 | `HOST` | `0.0.0.0` | HTTP bind host |
 | `PORT` | `8000` | HTTP port |
 | `MCP_PATH` | `/mcp` | HTTP path |
-| `KINDORA_MCP_URL` | `https://mcp.kindora.co/mcp` | Upstream to proxy |
+| `KINDORA_MCP_URL` | `https://kindora-mcp.azurewebsites.net/mcp/` | Upstream to proxy |
 | `KINDORA_API_KEY` | _(unset)_ | Forwarded as `Authorization: Bearer ...` if set |
 | `KINDORA_TIMEOUT` | `60` | Upstream call timeout (seconds) |
 

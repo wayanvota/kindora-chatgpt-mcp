@@ -9,7 +9,7 @@ ENV TRANSPORT=http \
     HOST=0.0.0.0 \
     PORT=8000 \
     MCP_PATH=/mcp \
-    KINDORA_MCP_URL=https://mcp.kindora.co/mcp
+    KINDORA_MCP_URL=https://kindora-mcp.azurewebsites.net/mcp/
 
 EXPOSE 8000
 CMD ["python", "server.py"]
