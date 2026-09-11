@@ -45,7 +45,7 @@ def test_every_tool_is_read_only():
     tools = asyncio.run(_tool_objects())
     for t in tools:
         ann = getattr(t, "annotations", None)
-        assert ann is not None and ann.readOnlyHint is True, f"{t.name} not read-only"
+        assert ann is not None and ann.read_only_hint is True, f"{t.name} not read-only"
 
 
 # --- _call() normalization, with a stubbed upstream client -------------------

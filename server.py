@@ -30,10 +30,17 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
+
+# An MCP stdio server must not make an unrelated network request or print a
+# banner while establishing its protocol connection.
+os.environ.setdefault("FASTMCP_SHOW_SERVER_BANNER", "false")
+os.environ.setdefault("FASTMCP_CHECK_FOR_UPDATES", "off")
 
 from fastmcp import Client, FastMCP
 from fastmcp.client.transports import StreamableHttpTransport
+from fastmcp.exceptions import ToolError
+from pydantic import Field
 
 # --------------------------------------------------------------------------- #
 # Configuration
@@ -50,6 +57,13 @@ KINDORA_API_KEY = os.environ.get("KINDORA_API_KEY")
 UPSTREAM_TIMEOUT = float(os.environ.get("KINDORA_TIMEOUT", "60"))
 
 READ_ONLY = {"readOnlyHint": True, "openWorldHint": True}
+Limit = Annotated[int, Field(ge=1, le=50)]
+GrantWindow = Annotated[int, Field(ge=1, le=365)]
+JobWindow = Annotated[int, Field(ge=0, le=730)]
+FilingYears = Annotated[int, Field(ge=1, le=10)]
+ShortText = Annotated[str, Field(max_length=500)]
+Ein = Annotated[str, Field(pattern=r"^\d{2}-?\d{7}$")]
+EinList = Annotated[list[Ein], Field(max_length=100)]
 
 mcp = FastMCP(
     name="kindora-chatgpt",
@@ -89,8 +103,11 @@ async def _call(tool: str, arguments: dict[str, Any]) -> Any:
     """
     arguments = {k: v for k, v in arguments.items() if v is not None}
 
-    async with Client(_build_transport(), timeout=UPSTREAM_TIMEOUT) as client:
-        result = await client.call_tool(tool, arguments)
+    try:
+        async with Client(_build_transport(), timeout=UPSTREAM_TIMEOUT) as client:
+            result = await client.call_tool(tool, arguments)
+    except Exception as exc:  # noqa: BLE001
+        raise ToolError("Kindora could not complete the request. Try again later.") from exc
 
     # fastmcp >=2 exposes deserialized structured output on .data, falling back
     # to .structured_content, then raw text content blocks.
@@ -120,7 +137,7 @@ async def _call(tool: str, arguments: dict[str, Any]) -> Any:
 
 @mcp.tool(annotations=READ_ONLY)
 async def search_funders(
-    query: Optional[str] = None,
+    query: Optional[ShortText] = None,
     state: Optional[str] = None,
     city: Optional[str] = None,
     ntee_code: Optional[str] = None,
@@ -131,7 +148,7 @@ async def search_funders(
     exclude_funder_types: Optional[list[str]] = None,
     country: Optional[list[str]] = None,
     grantee_country_codes: Optional[list[str]] = None,
-    limit: int = 20,
+    limit: Limit = 20,
 ) -> Any:
     """Find grantmaking organizations by name, cause area, or location.
 
@@ -170,17 +187,17 @@ async def search_funders(
 
 @mcp.tool(annotations=READ_ONLY)
 async def search_open_grants(
-    query: Optional[str] = None,
+    query: Optional[ShortText] = None,
     focus_area: Optional[str] = None,
     agency: Optional[str] = None,
     state: Optional[str] = None,
     country: Optional[str] = None,
-    deadline_days: int = 90,
+    deadline_days: GrantWindow = 90,
     min_award: Optional[int] = None,
     max_award: Optional[int] = None,
     nonprofit_only: bool = True,
     source: Optional[str] = None,
-    limit: int = 20,
+    limit: Limit = 20,
 ) -> Any:
     """Find OPEN grant opportunities and RFPs by topic or cause area.
 
@@ -215,18 +232,18 @@ async def search_open_grants(
 
 @mcp.tool(annotations=READ_ONLY)
 async def search_funder_jobs(
-    query: Optional[str] = None,
+    query: Optional[ShortText] = None,
     category: Optional[str] = None,
     state: Optional[str] = None,
     country: Optional[str] = None,
-    funder_ein: Optional[str] = None,
-    funder_eins: Optional[list[str]] = None,
+    funder_ein: Optional[Ein] = None,
+    funder_eins: Optional[EinList] = None,
     employment_type: Optional[str] = None,
     exclude_categories: Optional[list[str]] = None,
     remote: Optional[str] = None,
-    posted_within_days: int = 365,
+    posted_within_days: JobWindow = 365,
     sort_by: str = "funder_giving",
-    limit: int = 20,
+    limit: Limit = 20,
 ) -> Any:
     """Find OPEN philanthropy jobs at grantmaking foundations.
 
@@ -269,7 +286,7 @@ async def search_funder_jobs(
 # --------------------------------------------------------------------------- #
 
 @mcp.tool(annotations=READ_ONLY)
-async def get_funder_profile(ein: str) -> Any:
+async def get_funder_profile(ein: Ein) -> Any:
     """Get a detailed profile for one foundation by EIN.
 
     Returns legal name, location, financials (total assets, annual grants), leadership,
@@ -283,7 +300,7 @@ async def get_funder_profile(ein: str) -> Any:
 
 
 @mcp.tool(annotations=READ_ONLY)
-async def get_990_summary(ein: str, years: int = 5) -> Any:
+async def get_990_summary(ein: Ein, years: FilingYears = 5) -> Any:
     """Get an IRS 990 / 990-PF financial summary and year-over-year trends for a foundation.
 
     Returns per-year revenue, end-of-year assets, grants paid, mission text, and computed
@@ -298,13 +315,13 @@ async def get_990_summary(ein: str, years: int = 5) -> Any:
 
 @mcp.tool(annotations=READ_ONLY)
 async def get_foundation_grants(
-    ein: str,
+    ein: Ein,
     year: Optional[int] = None,
     ntee_code: Optional[str] = None,
     recipient_country: Optional[str] = None,
     recipient_state: Optional[str] = None,
     purpose_keyword: Optional[str] = None,
-    limit: int = 20,
+    limit: Limit = 20,
 ) -> Any:
     """List individual grants a foundation has made, from its 990-PF filings.
 
@@ -330,7 +347,7 @@ async def get_foundation_grants(
 
 
 @mcp.tool(annotations=READ_ONLY)
-async def get_funder_stats(ein: str) -> Any:
+async def get_funder_stats(ein: Ein) -> Any:
     """Get aggregate giving statistics for a foundation.
 
     Lifetime totals, average/median/min/max grant size, top NTEE focus areas, US-state and
@@ -350,7 +367,7 @@ async def get_funder_stats(ein: str) -> Any:
 @mcp.tool(annotations=READ_ONLY)
 async def get_ntee_codes(
     category: Optional[str] = None,
-    query: Optional[str] = None,
+    query: Optional[ShortText] = None,
 ) -> Any:
     """Browse or search NTEE classification codes for cause areas.
 

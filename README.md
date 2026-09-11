@@ -44,6 +44,7 @@ ChatGPT Developer mode can connect to any remote MCP server, so a wrapper is opt
 ├── requirements.txt     # runtime dependency (fastmcp)
 ├── pyproject.toml        # packaging + pytest config
 ├── test_server.py        # offline tests (no network needed)
+├── tests/                # stdio protocol fixture and 20-case E2E suite
 ├── Dockerfile            # container image for hosting
 ├── fly.toml              # one-command deploy to Fly.io
 ├── render.yaml           # one-click deploy to Render
@@ -78,10 +79,42 @@ Use this for local testing or to add the server to a stdio MCP client (e.g. Clau
 
 ```bash
 pip install -e ".[dev]"
-pytest
+python -m compileall -q server.py test_server.py tests
+python -m pip check
+pytest -q
 ```
 
-The suite is offline: it checks tool registration, the read-only annotations, and the upstream-response normalization with a stubbed client. It does not make a live call to Kindora.
+The suite is offline and deterministic. The unit tests check tool registration,
+read-only annotations, and upstream-response normalization. The 20-case E2E
+suite starts the real server as a subprocess, completes MCP initialization over
+stdio, discovers tools, and calls them through the public protocol. A fixture
+upstream replaces only the remote Kindora service, so CI needs no credentials
+or network access.
+
+Run only the protocol-level E2E coverage:
+
+```bash
+pytest -q tests/test_e2e.py
+```
+
+The categories are labeled `U01` through `U10` for user workflows and `A01`
+through `A10` for validation and abuse cases. They cover discovery, defaults,
+EIN drilldowns, Unicode, repeated calls, unknown tools, invalid argument types
+and bounds, inert hostile text, upstream error redaction, and secret safety.
+
+### Debug a failing E2E test
+
+Run one category with full output, for example:
+
+```bash
+pytest -vv -s tests/test_e2e.py::test_a09_upstream_exception_is_generic_and_secret_safe
+```
+
+The fixture process is `tests/fixture_server.py`. Extend its deterministic
+responses when adding a tool, then add both a successful protocol test and the
+most relevant validation or failure case. Do not put a live API key in the
+fixture, test output, or GitHub Actions. CI stores the JUnit result as a workflow
+artifact for each supported Python version.
 
 ## Run as a public HTTP endpoint (required for ChatGPT)
 
