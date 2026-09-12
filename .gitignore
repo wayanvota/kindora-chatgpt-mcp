@@ -25,3 +25,4 @@ env/
 
 # pytest sandbox artifact
 pytest-cache-files-*/
+test-results/e2e/
