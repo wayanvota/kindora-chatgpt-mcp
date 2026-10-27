@@ -8,6 +8,7 @@ license = { text = "MIT" }
 dependencies = [
     "fastmcp>=2.3.0",
     "pydantic>=2.12,<3",
+    "certifi>=2026.10.19",
 ]
 
 [project.optional-dependencies]
