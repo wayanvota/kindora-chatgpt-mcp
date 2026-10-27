@@ -1,0 +1,39 @@
+name: Container security
+
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+      - requirements.txt
+      - .github/workflows/container-security.yml
+  push:
+    branches: [main, master]
+    paths:
+      - Dockerfile
+      - requirements.txt
+      - .github/workflows/container-security.yml
+  schedule:
+    - cron: "17 10 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build container
+        run: docker build --tag kindora-chatgpt-mcp:audit .
+      - name: Scan for fixable high-severity vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: kindora-chatgpt-mcp:audit
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
