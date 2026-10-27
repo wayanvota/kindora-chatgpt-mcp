@@ -8,7 +8,7 @@ RUN apt-get update \
     && groupadd --system app \
     && useradd --system --gid app --home-dir /app app
 COPY --chown=app:app requirements.txt .
-RUN python -m pip install --no-cache-dir --upgrade "pip>=26.2.0" \
+RUN python -m pip install --no-cache-dir --upgrade "pip>=26.2.0" "setuptools>=78.1.1" \
     && python -m pip install --no-cache-dir -r requirements.txt
 COPY --chown=app:app server.py .
 

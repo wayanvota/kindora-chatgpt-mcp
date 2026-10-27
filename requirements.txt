@@ -1,3 +1,5 @@
 fastmcp>=2.3.0
 pydantic>=2.12,<3
 certifi>=2026.10.19
+msgpack>=1.2.1
+urllib3>=2.8.0
