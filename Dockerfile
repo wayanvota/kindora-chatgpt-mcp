@@ -1,4 +1,4 @@
-FROM python:3.12.15-slim-trixie@sha256:cb33f7f771ecec2ef1225cf39b159591a040391bd73e4c01f00fdfc4c47611d2 AS builder
+FROM python:3.15.2-slim-trixie@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928 AS builder
 
 WORKDIR /build
 COPY requirements.txt .
@@ -6,7 +6,7 @@ RUN python -m pip install --no-cache-dir --upgrade "pip>=26.2.0" "setuptools>=78
     && python -m pip install --no-cache-dir --target /opt/python -r requirements.txt \
     && PYTHONPATH=/opt/python python -c "import msgpack, urllib3; assert msgpack.version >= (1, 2, 1); assert tuple(map(int, urllib3.__version__.split('.'))) >= (2, 8, 0)"
 
-FROM python:3.12.15-slim-trixie@sha256:cb33f7f771ecec2ef1225cf39b159591a040391bd73e4c01f00fdfc4c47611d2
+FROM python:3.15.2-slim-trixie@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928
 
 WORKDIR /app
 RUN apt-get update \
